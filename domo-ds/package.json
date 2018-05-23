@@ -1,0 +1,94 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "domo-ds",
+        "scope": null,
+        "escapedName": "domo-ds",
+        "name": "domo-ds",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "/Users/jamiemorrison"
+    ]
+  ],
+  "_from": "domo-ds@latest",
+  "_id": "domo-ds@1.5.0",
+  "_inCache": true,
+  "_location": "/domo-ds",
+  "_nodeVersion": "8.5.0",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/domo-ds_1.5.0_1525436713864_0.08928381537730035"
+  },
+  "_npmUser": {
+    "name": "n8isjack",
+    "email": "n8isjack@yahoo.com"
+  },
+  "_npmVersion": "5.5.1",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "domo-ds",
+    "scope": null,
+    "escapedName": "domo-ds",
+    "name": "domo-ds",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/domo-ds/-/domo-ds-1.5.0.tgz",
+  "_shasum": "051958363d0267de8d70352c780db166ff19fd37",
+  "_shrinkwrap": null,
+  "_spec": "domo-ds",
+  "_where": "/Users/jamiemorrison",
+  "author": {
+    "name": "Nathan Washburn",
+    "email": "n8isjack@yahoo.com"
+  },
+  "bin": {
+    "domo-ds": "./index.js"
+  },
+  "dependencies": {
+    "colors": ">=1.1.2",
+    "mkdirp": "^0.5.1"
+  },
+  "description": "Domo dataset reviewer allowing you to see upstream and downstream dependencies for all datasets and dataflows in an instance of Domo.",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "integrity": "sha512-hzwaokrg4LjgoIfjPIE5giW72Z4InXnOkcdp0Wf0Ae6FaswU/40vMUnvCp6RXVMU4AZ423XBeQZ5cA4xZG4+IA==",
+    "shasum": "051958363d0267de8d70352c780db166ff19fd37",
+    "tarball": "https://registry.npmjs.org/domo-ds/-/domo-ds-1.5.0.tgz",
+    "fileCount": 20,
+    "unpackedSize": 4216842,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJa7FEqCRA9TVsSAnZWagAAFHkP/1WSMjt1py3O5XZrcCuZ\nnwt+hDlpuyr/bYHz8ts7ts6CI7R0ttTLFV+NyoIL90/Od9hc1NAh08Ujymhb\nvegedsmXSIfR5IDlryxAxqetPjFGmyOxaQo25OZSeJ6xPSCe+1eqrIWiQG3x\nK3ObewXdq8nj3FumRr2FHwTsg+944XQtpX8at2+3IbjGyltV0Hq7du3VyjTZ\nqIDwt18ylOi70cU+LP+lBIDSTIGtSHC2l5D78f2rAZcRtpQq0eh+UT5ItLuq\nO1rhJQ1w1AqFsPA7vF+xNg0LSP4GgEGH9ftBnY+miM/Nic2d/4r4MibIM6QP\n07Ww7lpCmOvs4fr7/c52k0bHbePFupFzulRGe1jaAFAQ29otO9ADPofs9qH4\nwynkOH7LXA5xQa17uKRLldoTGButob7mRYTD4M2b5z/ArJwBhcnFPs5heSEe\n+MB2Tz5ZyWxGtcZlU5xjhohJ9QEzpS2v7ohd7XE49JmxpEXoepAMarE84Bnj\ntZgWZd+AH4xMvUJnf30v6R064xYppy13DjYrgHdvGTE4kmavbzoKeV5zas9L\nwszvosPIk4gFqGN72fA7t+3tBNTqdWi2SDNeI0SRIXyL2V0+JkgqBfbKiCoQ\nunXECEGaA/PRw7hcSJQQc5uEQcmxt0Tdfy2SWoRaE45C5lqi5WYOOzsAxhgk\nMhrp\r\n=3074\r\n-----END PGP SIGNATURE-----\r\n"
+  },
+  "files": [
+    "index.js",
+    "ds_lineage.html",
+    "lib/"
+  ],
+  "gitHead": "23d5c18a7bb05f3f74326e2cccd3adb2b50b1907",
+  "keywords": [
+    "Domo",
+    "Dataset",
+    "Dataflow",
+    "Dataset Analyzer"
+  ],
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "n8isjack",
+      "email": "n8isjack@yahoo.com"
+    }
+  ],
+  "name": "domo-ds",
+  "optionalDependencies": {},
+  "preferGlobal": true,
+  "readme": "ERROR: No README data found!",
+  "version": "1.5.0"
+}

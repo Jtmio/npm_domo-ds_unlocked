@@ -1,0 +1,476 @@
+<html>
+<head>
+  <title>D3</title>
+  <style>
+  .node circle {
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 3px;
+  }
+
+  .node text { font: 12px sans-serif; }
+
+  .node--internal text {
+    text-shadow: 0 1px 0 #fff, 0 -1px 0 #fff, 1px 0 0 #fff, -1px 0 0 #fff;
+  }
+  .title{
+    cursor: pointer;
+  }
+  .title:hover{
+    fill: #000;
+  }
+  .rect{
+    fill: none;
+    stroke: #444;
+    stroke-width: 2;
+    display: none;
+  }
+  .link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 2px;
+  }
+  </style>
+</head>
+<body>
+  <div id="viz">
+
+  </div>
+  <!-- <script src="d3/d3.js"></script> -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script type="text/javascript">
+
+  var data = [
+    {cx: 50, cy: 50}
+    ,{cx: 50, cy: 180}
+  ]
+  var sampleData = [{
+    name: 'First Obj'
+    ,up: [
+      {
+        name: 'Parent 1', up:[{
+          name: '2Grandparent 1', up: [{
+            name: '2GGrandparent 1', up: [{
+              name: '2GGGrandparent 1', up: [{
+                name: '2GGGGrandparent 1', up: []
+              }]
+            }]
+          }]
+        }]
+      },{
+        name: 'Parent 2', up:[{
+          name: 'Grandparent 1', up: [{
+            name: 'GGrandparent 1', up: [{
+              name: 'GGGrandparent 1', up: [{
+                name: 'GGGGrandparent 1', up: [{
+                  name: 'GGGGGrandparent 1', up: [{
+                    name: 'GGGGGGrandparent 1', up: []
+                  }]
+                }]
+              },{
+                name: 'GGGGrandparent 2', up: []
+              },{
+                name: 'GGGGrandparent 3', up: []
+              },{
+                name: 'GGGGrandparent 4', up: []
+              },{
+                name: 'GGGGrandparent 5', up: []
+              }]
+            }]
+          }]
+        }]
+      },{
+        name: 'Parent 3', up: [{
+          name: 'Grandparent 1', up: [{
+            name: 'GGrandparent 1', up: [{
+              name: 'GGGrandparent 1', up: [{
+                name: 'GGGGrandparent 1', up: []
+              },{
+                name: 'GGGGrandparent 2', up: []
+              },{
+                name: 'GGGGrandparent 3', up: []
+              },{
+                name: 'GGGGrandparent 4', up: []
+              }]
+            }]
+          }]
+        }]
+      }
+    ],down: [
+      {name: 'Child 1', down:[
+
+      ]},{
+        name: 'Child 2', down:[{
+          name: 'Grandchild 1', down: [{
+            name: 'Great Grandchild 1', down: []
+          }]
+        }]
+      }
+    ]
+  }]
+/*
+  function dig(obj,dir,level){
+    level = level || 0;
+    var res = {
+      depth: 0
+      ,height: 0
+      ,heights: {}
+    }
+    res.heights[dir] = [];
+
+    if(obj.forEach){
+      obj.forEach(function(me,idx,arr){
+        me.depth = me.depth || {};
+        me.height = me.height || {};
+        me.depth[dir] = 0;
+        me.height[dir] = 0;
+        me.level = level;
+        me.dir = dir;
+        me.idx = idx;
+        me.groupSize = arr.length;
+        me.heights = me.heights || {};
+        me.heights[dir] = [];
+
+        if(me[dir].length > 0){
+          me.height[dir] = me[dir].length -1;
+          var dug = dig(me[dir], dir, level + 1);
+          me.depth[dir] = dug.depth +1;
+          me.height[dir] += dug.height;
+          me.heights[dir] = dug.heights[dir];
+        }
+        res.depth = (me.depth[dir] > res.depth) ? me.depth[dir] : res.depth;
+        res.height += me.height[dir];
+        res.heights[dir][idx] = me.height[dir];
+      });
+    }
+    return res;
+  }
+
+  var s = {};
+
+  s.digUp = dig(sampleData,'up');
+  s.digDown = dig(sampleData,'down');
+  s.height = 1 + (s.digUp.height > s.digDown.height ? s.digUp.height : s.digDown.height);
+  s.width = 1 + s.digUp.depth + s.digDown.depth;
+  s.h = 35;
+  s.w = 200;
+
+  console.log('s', s);
+  console.log('obj', sampleData);
+
+
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", s.width * s.w)
+    .attr("height", (s.height+1.5) * s.h)
+    .style("background-color", '#39a');
+
+  function addNode(info){
+    //info.x
+    //info.baseY
+    //info.dir
+
+    var heights = info.heights[info.dir] || [];
+    var ttlHeight = heights.reduce(function(a,me){
+      return a += me+1;
+    },0);
+
+    // console.log(ttlHeight);
+
+    info.arr.forEach(function(me,idx){
+      myTop = info.top + heights.reduce(function(a,me,hidx){
+        // console.log('loop', a, me, hidx, idx);
+        return a += (hidx < idx) ? me + 1 : 0;
+      },0);
+
+      console.log('myTop', me.name, info.top, myTop);
+
+      var text = svg.append("text")
+        .attr("x", function(d) {
+          if(me.level === 0){
+            return (s.digUp.depth * s.w);
+          }else{
+            return info.x;
+          }
+
+        }).attr("y", function(d) {
+          if(me.level === 0){
+            return ((s.height * s.h) / 2);
+          }else{
+            return ((myTop+1) *s.h + ((me.height[info.dir]+1)/2)*s.h);
+          }
+
+        }).text( function (d) { return me.name; })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "20px")
+        .attr("fill", "#444")
+        .style("background-color", "#999")
+      ;
+      if(!me[info.dir]){
+        return;
+      }
+
+      addNode({
+        x: info.x - s.w
+        ,baseY: (info.baseY - ((me.groupSize-1) * s.h / 2) + (me.idx)*s.h)
+        ,arr: me[info.dir]
+        ,heights: me.heights
+        ,dir: info.dir
+        ,top: myTop
+      })
+    });
+  }
+
+  sampleData.forEach(function(me){
+    var text = svg.append("text")
+      .attr("x", function(d) {
+        if(me.level === 0){
+          return (s.digUp.depth * s.w);
+        }
+
+      }).attr("y", function(d) {
+        if(me.level === 0){
+          return ((s.height * s.h) / 2);
+        }
+
+      }).text( function (d) { return me.name; })
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "20px")
+      .attr("fill", "#444")
+      .style("background-color", "#999")
+    ;
+    addNode({
+      x: (s.digUp.depth * s.w) - s.w
+      ,baseY: ((s.height * s.h) / 2)
+      ,arr: me.up
+      ,heights: me.heights
+      ,dir: 'up'
+      ,top: 0
+    })
+  });
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+  var treeData = JSON.parse(JSON.stringify(sampleData[0]).replace(/"up"/g,'"children"'));
+  var treeDatas = {
+    "name": "Top Level",
+    "children": [
+      {
+		"name": "Level 2: A",
+        "children": [
+          { "name": "Son of A" },
+          { "name": "Daughter of A" }
+        ]
+      },
+      { "name": "Level 2: B" }
+    ]
+  };
+
+  // set the dimensions and margins of the diagram
+  var margin = {top: 20, right: 90, bottom: 30, left: 90},
+      width = 1660 - margin.left - margin.right,
+      height = 1500 - margin.top - margin.bottom;
+
+  // declares a tree layout and assigns the size
+  var treemap = d3.tree()
+    .nodeSize([100, 100])
+    .separation(function(a,b){
+      return (a.parent == b.parent ? .4 : .75);
+    })
+  //  assigns the data to a hierarchy using parent-child relationships
+  var nodes = d3.hierarchy(treeData, function(d) {
+      return d.children;
+    });
+
+  // maps the node data to the tree layout
+  nodes = treemap(nodes);
+
+  // append the svg object to the body of the page
+  // appends a 'group' element to 'svg'
+  // moves the 'group' element to the top left margin
+  var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr('viewBox', "-800 -500 1500 1500")
+      ,g = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        ;
+
+  // adds the links between the nodes
+  var link = g.selectAll(".link")
+      .data( (function(){var x = nodes.descendants().slice(1); x.forEach(function(me){me.y = me.y * -1;}); return x;})())
+      .enter().append("path")
+      .attr("class", "link")
+      .attr("d", function(d) {
+         return "M" + d.y + "," + d.x
+           + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+           + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+           + " " + d.parent.y + "," + d.parent.x;
+         });
+
+  // adds each node as a group
+  var node = g.selectAll(".node")
+      .data(nodes.descendants())
+    .enter().append("g")
+      .attr("clip-path", "url(#ep)")
+      .attr("class", function(d) {
+        return "node" +
+          (d.children ? " node--internal" : " node--leaf"); })
+      .attr("transform", function(d) {
+        return "translate(" + d.y + "," + d.x + ")"; });
+
+
+  node.append("clip-path").attr("id", "ep")
+    .append("rect")
+    .attr("x", 0).attr("y", 0)
+    .attr("width", 10).attr("height", 10);
+
+  // adds the circle to the node
+  node.append("circle")
+    .attr("r", 10);
+  node.on("mouseover", function(d,i){
+    d3.select(this).attr({
+      fill: "#000"
+    })
+    console.log('hovered over '+d.name);
+  }).on("mouseout", function(d,i){
+    console.log('out')
+  })
+
+  // adds the text to the node
+  node.append("text")
+    .attr("dy", function(d) { return !d.children ? ".35em" : "-2em"; })
+    .attr("x", function(d) { return !d.children ? -13 : 0; })
+      .attr("clip-path", "url(#ep)")
+    .attr("class", "title")
+    .style("text-anchor", function(d) {
+      return !d.children ? "end" : "middle"; })
+    .text(function(d) { return d.data.name; });
+
+  node.append('rect')
+    .attr("x", -25)
+    .attr("y", -25)
+    .attr("width", 50)
+    .attr("height", 50)
+    .attr("rx", 3)
+    .attr("ry", 3)
+    .attr("class", "rect")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      var treeDataDown = JSON.parse(JSON.stringify(sampleData[0]).replace(/"down"/g,'"children"'));
+
+      // set the dimensions and margins of the diagram
+      // var margin = {top: 20, right: 90, bottom: 30, left: 90},
+      //     width = 1660 - margin.left - margin.right,
+      //     height = 1500 - margin.top - margin.bottom;
+
+      // declares a tree layout and assigns the size
+      var treemapDown = d3.tree()
+        .nodeSize([100, 100])
+        .separation(function(a,b){
+          return (a.parent == b.parent ? .5 : .75);
+        })
+      //  assigns the data to a hierarchy using parent-child relationships
+      var nodesDown = d3.hierarchy(treeDataDown, function(d) {
+          return d.children;
+        });
+
+      // maps the node data to the tree layout
+      nodesDown = treemap(nodesDown);
+
+      // append the svg object to the body of the page
+      // appends a 'group' element to 'svg'
+      // moves the 'group' element to the top left margin
+      // var svg = d3.select("body").append("svg")
+      //       .attr("width", width + margin.left + margin.right)
+      //       .attr("height", height + margin.top + margin.bottom)
+      //       .attr('viewBox', "-500 -500 1500 1500")
+        var g2 = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            ;
+
+      // adds the links between the nodes
+      var linkDown = g2.selectAll(".link")
+          .data(nodesDown.descendants().slice(1))
+          .enter().append("path")
+          .attr("class", "link")
+          .attr("d", function(d) {
+             return "M" + d.y + "," + d.x
+               + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+               + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+               + " " + d.parent.y + "," + d.parent.x;
+             });
+
+      // adds each node as a group
+      var nodeDown = g2.selectAll(".node")
+          .data(nodesDown.descendants())
+        .enter().append("g")
+          .attr("class", function(d) {
+            return "node" +
+              (d.children ? " node--internal" : " node--leaf"); })
+          .attr("transform", function(d) {
+            return "translate(" + d.y + "," + d.x + ")"; });
+
+      // adds the circle to the node
+      nodeDown.append("circle")
+        .attr("r", 10);
+
+      // adds the text to the node
+      nodeDown.append("text")
+        .attr("dy", function(d) { return d.children ? "-1.5em" : ".35em"; })
+        .attr("x", function(d) { return d.children ? 0 : 13; })
+        .attr("class", "title")
+        .style("text-anchor", function(d) {
+          return d.children ? "middle" : "start"; })
+        .text(function(d) { return d.parent ? d.data.name : ''; });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </script>
+</body>
+</html>

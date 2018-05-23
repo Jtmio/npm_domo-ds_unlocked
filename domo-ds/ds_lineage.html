@@ -1,0 +1,1465 @@
+<html ng-app="ds_lineage">
+  <head>
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.4/angular-material.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+    <style type="text/css">
+/*
+      down{
+        display: block;
+        margin: 4px 0 0 20px;
+      }
+*/
+/*
+      dataset:hover div.dataset{
+        background-color: #aaf;
+      }
+      dataflow:hover > div.dataflow{
+        background-color: #aaf;
+      }
+*/
+      *:focus {
+          outline: none;
+      }
+      body{
+        padding: 25px;
+        font-family: Roboto, Helvetica Neue, sans-serif;
+      }
+      .container{
+        padding: 15px;
+      }
+
+      .highlight{
+        background-color: #0cc;
+        color: #000 !important;
+        font-weight: bold;
+        border-radius: 4px;
+        padding: 2px;
+      }
+
+      .item-title, .item-metadata {
+        display: block;
+        line-height: 2;
+
+      }
+      .item-title{
+        font-weight: bold;
+      }
+
+      .autocomplete-custom-template li {
+        border-bottom: 1px solid #ccc;
+        height: auto;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        white-space: normal;
+      }
+      md-tooltip .md-content {
+        height: auto;
+/*        opacity: 1;*/
+        background-color: #333;
+        line-height: 1em;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        font-size: 1.3em;
+      }
+      img.imgtiny{
+        width: 15px;
+        height: 15px;
+        vertical-align: middle;
+      }
+      .pageHead{
+        background-color: #444;
+        height: 100px;
+        color: #eee;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .pageHead img{
+        float: left;
+        margin-right: 20px;
+        height: 100px;
+      }
+      .clear{
+        clear: both;
+      }
+      
+      .orderControl{
+        cursor: pointer;
+        padding: 5px;
+      }
+
+
+
+
+
+      .node circle {
+        fill: #fff;
+        stroke: steelblue;
+        stroke-width: 1px;
+      }
+      .node circle.focus{
+        fill: #aaf;
+      }
+      .node circle.picker{
+        fill: rgba(0,0,0,0);
+        cursor: zoom-in;
+      }
+      .node circle.picker:hover{
+        fill: #2a5e84;
+      }
+      .node text { font: 1.2em sans-serif; }
+
+      .node{
+        cursor: pointer;
+      }
+      /*.node:hover rect{
+        stroke: #000;
+        fill: #91C3E8 !important;
+      }*/
+
+      .node rect.hoverBox{
+        fill: rgba(0,0,0,0);
+      }
+      .node rect.titleBox{
+        fill: rgba(255,255,255,0.65);
+      }
+      .focalnode rect{
+        display: none;
+      }
+      .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 2px;
+      }
+      .link.pinpoint{
+        stroke-width: 4px;
+        stroke: #9E2216;
+      }
+      .node.duplicate circle.descendent, .node.duplicate circle.ancestor{
+        fill: #FC9927 !important;
+      }
+      .node--internal.duplicate .titleBox{
+        fill: #69BEA8 !important;
+      }
+
+      .node--leaf.duplicate .titleBox{
+        fill: #FC9927 !important;
+      }
+      
+      .detailSection{
+        padding: 8px;
+        border: 1px solid rgba(0,0,0,0.4);
+        border-radius: 4px;
+        display: inline-block;
+        margin: 0 8px;
+      }
+      .detailSection .head{
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #444;
+        text-align: center;
+        border-bottom: solid thin #999;
+        margin-bottom: 6px;
+      }
+      #svgholder{
+        /* overflow: hidden; */
+        /* text-align: center; */
+        /* position: relative; */
+        width: calc(100%);
+        height: calc(100% - 50px);
+        /* border: solid thin green; */
+      }
+      svg{
+        border: solid 3px #eee;
+      }
+      div#details{
+        /* background-color: rgba(255,255,255,0.95); */
+        /* border: 3px #ccc solid; */
+      }
+      div#details .info{
+        padding: 15px;
+      }
+      #details .name{
+        font-size: 1.3em;
+        font-weight: 400;
+        margin-bottom: 1em;
+        text-align: center;
+        min-height: 2.6em;
+      }
+      #details table{
+        border-collapse: collapse;
+      }
+      #details td.labels{
+        text-align: right;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        font-weight: 700;
+        color: #666;
+      }
+      #details td.field{
+        text-align: left;
+        font-weight: 700;
+        padding: 0 3em 0 1em;
+      }
+      .href{
+        text-decoration: none;
+        border-bottom: dotted #aaa 1px;
+        color: #4B87B0;
+        cursor: pointer;
+        font-weight: 500;
+        margin-bottom: 3px;
+      }
+      .href:hover{
+        border-bottom: none;
+        color: #43799E;
+      }
+    </style>
+
+    <style type="text/css">
+      #menu{
+        width: 300px;
+        height: 100%;
+        position: fixed;
+        top: 0px;
+        left: 0px;
+      }
+      #content{
+        width: calc(100% - 300px);
+        height: 100%;
+        position: fixed;
+        top: 0px;
+        left: 300px;
+      }
+      .stat{
+        max-height: calc(100% - 200px);
+        overflow-y: scroll;
+      }
+      .stat table{
+        border-collapse: collapse;
+        /* border: solid thin black; */
+      }
+      .stat table th{
+        color: #555;
+        font-weight: 500;
+        text-transform: uppercase;
+        cursor: pointer;
+        padding: 3px 5px;
+      }
+      .stat table th:hover{
+        text-decoration: underline;
+        background-color: #C8E2F4;
+      }
+      .stat table td{
+        text-align: center;
+        padding: 2px 4px;
+      }
+      .stat table td.left{
+        text-align: left;
+      }
+      .stat table tr.datarow{
+        cursor: pointer;
+      }
+      .stat table tr.datarow:hover{
+        background: #bbb;
+      }
+      .statSearch{
+        min-width: 40%;
+      }
+    </style>
+<!--    Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.4/angular-material.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+
+    <!-- QQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAA -->
+    <script src="lib/sampleMisys.js" type="text/javascript"></script>
+
+    
+    <!-- //QQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAA -->
+
+    <title>Dataset Analyzer</title>
+  </head>
+  <body ng-controller="main" ng-cloak>
+    <div class="page">
+      <div id="menu">
+          <div class="pageHead">
+            <img ng-src="{{dl}}" />
+            <h2>Datawiz</h2>
+            <h5>{{i}}</h5>
+          </div>
+          <div style="text-align: center;">
+            <h4>Static Data as of<br />{{static}}</h4>
+          </div>
+          <div>
+            <md-content layout="row" layout-align="space-around start">
+              <md-button ng-click="$root.page='stats';" class="md-raised" ng-class="{'md-primary': $root.page=='stats'}">
+                Stats
+              </md-button>
+              <md-button ng-click="$root.page='svg';" class="md-raised" ng-class="{'md-primary': $root.page=='svg'}">
+                Datawiz
+              </md-button>
+            </md-content>
+          </div>
+          <div id="details" layout="column" layout-align="start stretch" ng-show="details.name">
+            <div>
+              <div class="name" layout="column" layout-align="end stretch">{{details.name}}</div>
+              <table ng-show="details.cardInfo">
+                <tr>
+                  <td class="labels">Cards</td>
+                  <td class="field">{{details.cardInfo.cardCount}}</td>
+                </tr><tr>
+                  <td class="labels">Card Views</td>
+                  <td class="field">{{details.cardInfo.cardViewCount}}</td>
+                </tr><tr>
+                  <td class="labels">Columns</td>
+                  <td class="field">{{details.columnCount}}</td>
+                </tr><tr>
+                  <td class="labels">Rows</td>
+                  <td class="field">{{details.rowCount}}</td>
+                </tr><tr>
+                  <td class="labels">Type</td>
+                  <td class="field">{{details.displayType}}</td>
+                </tr><tr>
+                  <td class="labels">Created</td>
+                  <td class="field">{{details.created | date}}</td>
+                </tr><tr>
+                  <td class="labels">Last Touched</td>
+                  <td class="field">{{details.lastTouched | date}}</td>
+                </tr><tr>
+                  <td class="labels">Last Updated</td>
+                  <td class="field">{{details.lastUpdated | date}}</td>
+                </tr><tr>
+                  <td class="labels">Next Update</td>
+                  <td class="field">{{details.nextUpdate | date}}</td>
+                </tr>
+              </table>
+              <table ng-show="!details.cardInfo">
+                <tr>
+                  <td class="labels">Type</td>
+                  <td class="field">{{details.databaseType}}</td>
+                </tr><tr>
+                  <td class="labels">Run Count</td>
+                  <td class="field">{{details.executionCount}}</td>
+                </tr><tr>
+                  <td class="labels">Successful Runs</td>
+                  <td class="field">{{details.executionSuccessCount}}</td>
+                </tr><tr>
+                  <td class="labels">Inputs</td>
+                  <td class="field">{{details.inputs.length}}</td>
+                </tr><tr>
+                  <td class="labels">Outputs</td>
+                  <td class="field">{{details.outputs.length}}</td>
+                </tr><tr>
+                  <td class="labels">Enabled</td>
+                  <td class="field">{{details.enabled}}</td>
+                </tr><tr>
+                  <td class="labels">Created</td>
+                  <td class="field">{{details.created | date}}</td>
+                </tr><tr>
+                  <td class="labels">Modified</td>
+                  <td class="field">{{details.modified | date}}</td>
+                </tr><tr>
+                  <td class="labels">Last Run</td>
+                  <td class="field">{{details.lastExecution.lastUpdated | date}}</td>
+                </tr><tr>
+                  <td class="labels">Last Duration</td>
+                  <td class="field">{{details.duration}}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+      </div>
+
+      <div id="content" ng-init="$root.page = 'stats'; show = 'dataflows';">
+        <div ng-show="$root.page == 'stats'" class="statspage">
+          <div layout="row" layout-align="center start" class="statstopper">
+            <div layout="column">
+              <md-button ng-click="show='dataflows';" class="md-raised" ng-class="{'md-primary': show=='dataflows'}">
+                Dataflows
+              </md-button>
+              <md-button ng-click="csv.flows()">
+                Export
+              </md-button>
+            </div>
+            <div layout="column">
+              <md-button ng-click="show='datasets';" class="md-raised" ng-class="{'md-primary': show=='datasets'}">
+                Datasets
+              </md-button>
+              <md-button ng-click="csv.datasets()">
+                Export
+              </md-button>
+            </div>
+            <div layout="column" ng-show="useCards">
+              <md-button ng-click="show='cards';" class="md-raised" ng-class="{'md-primary': show=='cards'}">
+                Cards
+              </md-button>
+              <md-button ng-click="csv.cards()" ng-show="useCards">
+                Export
+              </md-button>
+            </div>
+          </div>
+          <div layout="column" layout-align="start center">
+            <md-input-container class="statSearch">
+              <label>Search</label>
+              <input ng-model="statSearch">
+            </md-input-container>
+          </div>
+          <div class="stat">
+            <div layout="column" layout-align="start center">
+              
+              <table ng-init="dsOrderby='seconds'; dsOrderDir=true" ng-show="show=='datasets'">
+                <tr>
+                  <th ng-click="dsOrderby='name'; dsOrderDir= !(dsOrderDir && (dsOrderby=='name'));" class="orderControl">Name</th>
+                  <th ng-click="dsOrderby='cardInfo.cardCount'; dsOrderDir= !(dsOrderDir && (dsOrderby=='cardInfo.cardCount'));" class="orderControl">Card Count</th>
+                  <th ng-click="dsOrderby='columnCount'; dsOrderDir= !(dsOrderDir && (dsOrderby=='columnCount'));" class="orderControl">Columns</th>
+                  <th ng-click="dsOrderby='rowCount'; dsOrderDir= !(dsOrderDir && (dsOrderby=='rowCount'));" class="orderControl">Rows</th>
+                  <th ng-click="dsOrderby='lastUpdated'; dsOrderDir= !(dsOrderDir && (dsOrderby=='lastUpdated'))" class="orderControl">Last Update</th>
+                </tr>
+                
+    
+                <tr 
+                  ng-repeat="set in d | filter:statSearch | orderBy:dsOrderby:dsOrderDir"
+                  ng-click="$root.pick = set"
+                  class="datarow"
+                >
+                  <td class="left">{{set.name}}</td>
+                  <td>{{set.cardInfo.cardCount}}</td>
+                  <td>{{set.columnCount | number}}</td>
+                  <td>{{set.rowCount | number}}</td>
+                  <td>{{set.lastUpdated | date}}</td>
+                </tr>
+              </table>
+              <table ng-init="dfOrderBy='seconds'; dfOrderDir=true" ng-show="show=='dataflows'">
+                <tr>
+                  <th ng-click="dfOrderBy='seconds'; dfOrderDir= !(dfOrderDir && (dfOrderBy=='seconds'));" class="orderControl">Duration</th>
+                  <th ng-click="dfOrderBy='executionSuccessCount'; dfOrderDir= !(dfOrderDir && (dfOrderBy=='executionSuccessCount'));" class="orderControl">Runs</th>
+                  <th ng-click="dfOrderBy='numInputs'; dfOrderDir= !(dfOrderDir && (dfOrderBy=='numInputs'));" class="orderControl">Inputs</th>
+                  <th ng-click="dfOrderBy='numOutputs'; dfOrderDir= !(dfOrderDir && (dfOrderBy=='numOutputs'))" class="orderControl">Outputs</th>
+                  <th ng-click="dfOrderBy='name'; dfOrderDir= !(dfOrderDir && (dfOrderBy=='name'));" class="orderControl">Name</th>
+                </tr>
+                
+                <tr 
+                  ng-repeat="flow in f | filter:statSearch | orderBy:dfOrderBy:dfOrderDir"
+                  ng-click="$root.pick = flow"
+                  class="datarow"
+                >
+                  <td class="left">{{flow.duration}}</td>
+                  <td>{{flow.executionSuccessCount}}</td>
+                  <td>{{flow.numInputs}}</td>
+                  <td>{{flow.numOutputs}}</td>
+                  <td class="left">{{flow.name}}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div ng-show="$root.page == 'svg'">
+          <div ng-show="$root.back.length>0">
+            <md-content>
+              <div>
+                <md-button ng-click="$root.goBack()" ng-disabled="$root.back.length<2">
+                  <i class="fa fa-step-backward"></i>
+                  Back
+                </md-button>
+                <md-button ng-click="$root.goFwd()" ng-disabled="$root.fwd.length<1">
+                  Forward
+                  <i class="fa fa-step-forward"></i>
+                </md-button>
+              </div>
+            </md-content>
+          </div>
+          <div id="svgholder"></div>
+        </div>
+      </div>
+    </div> <!-- END OF PAGE -->
+
+
+
+    <script type="text/ng-template" id="/dataflowDetails.html">
+      <md-dialog style="min-width= 80%;">
+        <md-dialog-content>
+          <div style="padding: 20px;">
+            <h1>{{me.name}}</h1>
+            <div layout="row" >
+              <div class="detailSection">
+                <div class="head">Links</div>
+                <div layout="column" layout-align="start space-around">
+                  <span class="href" ng-click="openLink('https://'+i+'/datacenter/dataflows/'+me.id+'/details')">Open in Domo</span>
+                  <span class="href" ng-click="closeDialog();$root.pick = me;">Re-center Chart</span>
+                </div>
+              </div>
+              <div class="detailSection">
+                <div class="head">Info</div>
+
+              </div>
+            </div>
+          </div>
+
+        </md-dialog-content>
+        <md-dialog-actions>
+          <md-button ng-click="closeDialog()" class="md-primary">
+            Close
+          </md-button>
+        </md-dialog-actions>
+      </md-dialog>
+    </script>
+
+
+    <script type="text/ng-template" id="/datasetDetails.html">
+      <md-dialog style="min-width= 80%;">
+        <md-dialog-content>
+          <div style="padding: 20px;">
+            <h1>{{me.name}}</h1>
+            <div layout="row" >
+              <div class="detailSection">
+                <div class="head">Links</div>
+                <div layout="column" layout-align="start space-around">
+                  <span class="href" ng-click="openLink('https://'+i+'/datasources/'+me.id+'/details/overview')">Open in Domo</span>
+                  <span class="href" ng-click="closeDialog();$root.pick = me;">Re-center Chart</span>
+                </div>
+              </div>
+              <div class="detailSection">
+                <div class="head">Cards</div>
+                <table>
+                  <tr>
+                    <td>
+                      <label>Count:</label>
+                    </td>
+                    <td>
+                      {{me.cardInfo.cardCount}}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label>Card Views:</label>
+                    </td>
+                    <td>
+                      {{me.cardInfo.cardViewCount}}
+                    </td>
+                  </tr>
+                </table>
+                <table>
+                  <tr ng-repeat="card in me.cards">
+                    <td>
+  
+                      <a ng-href="https://{{i}}/kpis/details/{{card.kpiId}}" target="_blank">{{card.kpiTitle}}</a>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </md-dialog-content>
+        <md-dialog-actions>
+          <md-button ng-click="closeDialog()" class="md-primary">
+            Close
+          </md-button>
+        </md-dialog-actions>
+      </md-dialog>
+    </script>
+
+
+    <script type="text/javascript">
+
+      var app = angular.module('ds_lineage',['ngSanitize','ngMaterial','ngAnimate']);
+
+
+      app.controller('main',function($scope,myData,$rootScope,$filter,$mdDialog, $timeout){
+        $scope.f = myData.dataFlows;
+        $scope.d = myData.dataSets;
+        $scope.i = myData.instance;
+        $scope.csv = myData.csv;
+        $scope.static = myData.staticDate;
+        $scope.hoveredElement = 0;
+
+        $scope.sl = myData.spinnerLarge;
+        $scope.sm = myData.spinnerMed;
+        $scope.ss = myData.spinnerSmall;
+        $scope.dfi = myData.dataFlowImg;
+        $scope.dsi = myData.datasetImg;
+        $scope.dl = myData.domologo;
+        $rootScope.showCards = false;
+        $scope.useCards = myData.cards.length > 0;
+        $scope.details = {};
+        
+        $rootScope.page = 'stats';
+
+        $scope.getMatches = function(str){
+          let a = [];
+          if(str && str != ''){
+            a = $filter('filter')($scope.d,{name: str}).concat($filter('filter')($scope.f,{name: str}));
+          }else{
+            a = $scope.d.concat($scope.f);
+          }
+          return $filter('orderBy')(a,'name');
+        }
+
+        function buildTree(options){
+          var o = options;
+          let ids = o.ids || {};
+          if(!o.root || !o.dir){
+            return [];
+          };
+          
+          var me = o.root;
+          if(ids[me.id] ){ //&& me.type != 'datafusion'
+            console.log('already found', me.id, ids[me.id], me);
+            ids[me.id]++;
+            if(ids[me.id] > 1) return []; //Agent - Leads by List Full
+          }else{
+            ids[me.id] = 1;
+          }
+
+          if(me.cardInfo && me.type != 'datafusion' || me.type == 'datafusion' && o.dir != 'up'){ //is a dataset
+            if(o.dir == 'up'){
+              var children = myData.getUpStream(me.id)
+            }else{
+              var children = myData.getDownStream(me.id)
+            }
+            var tree = [];
+
+            children.forEach(function(child){
+              var branch = {
+                name: myData.getDataflow(child.id).name
+                ,data: child
+              };
+              branch[o.dir] = buildTree({dir:o.dir, root:child, ids:ids});
+
+              tree.push(branch);
+            });
+
+            return tree;
+          }else if(me.inputs){ //is a dataflow
+            if(o.dir == 'up'){
+              var children = me.inputs
+            }else{
+              var children = me.outputs
+            }
+            var tree = [];
+
+            children.forEach(function(child){
+              var set = myData.getDataset(child.id);
+
+              var branch = {
+                name: set.name
+                ,data: set
+              };
+              branch[o.dir] = buildTree({dir:o.dir, root:set, ids:ids});
+
+              tree.push(branch);
+            });
+
+            return tree;
+          }
+        }
+
+        $rootScope.back =[];
+        $rootScope.fwd = [];
+
+        $rootScope.goBack = function(){
+          if(!$rootScope.back.length > 2) return;
+
+          $rootScope.fwd.unshift($rootScope.back.pop());
+          $rootScope.go($rootScope.back.pop(), true);
+        }
+
+        $rootScope.goFwd = function(){
+          if(!$rootScope.fwd.length>0) return;
+
+          $rootScope.go($rootScope.fwd.shift(), true);
+        }
+
+        $rootScope.go = function(pick, shift){
+          if(!pick){ return;}
+          
+          if(!shift){
+            $rootScope.fwd.length = 0;
+          }
+          // console.log('pick', pick);
+          $rootScope.picked = pick;
+          $rootScope.back.push(pick);
+
+          var tree = {
+            name: pick.name
+            ,data: pick
+            ,up: buildTree({dir:'up', root: pick})
+            ,down: buildTree({dir:'down', root: pick})
+          };
+          if($rootScope.page != 'svg'){
+            $rootScope.page = 'svg';
+          }
+          buildSVG(tree);
+        }
+
+        $rootScope.$watch('pick',function(v){
+          if(!v){ return;}
+          $rootScope.go(v);
+        });
+
+        console.log('flows array', $scope.f);
+        console.log('datasets array', $scope.d);
+
+        function buildSVG(data){
+          // return;
+          d3.select("svg.dsTree").remove();
+
+          var treeData = JSON.parse(JSON.stringify(data).replace(/"up"/g,'"children"'));
+          var treeDataDown = JSON.parse(JSON.stringify(data).replace(/"down"/g,'"children"'));
+
+
+          //ET+SF - Newsletter Subscriptions Engagement March 2016
+          
+          // declares a tree layout and assigns the size
+          var treemap = d3.tree()
+            .nodeSize([100, 300])
+            .separation(function(a,b){
+              return (a.parent == b.parent ? .4 : .4);
+            })
+          //  assigns the data to a hierarchy using parent-child relationships
+          var nodes = d3.hierarchy(treeData, function(d) {
+              return d.children;
+            });
+
+
+          // maps the node data to the tree layout
+          nodes = treemap(nodes);
+
+          function maxXY(node){
+            var xy = {
+              y: node.x
+              ,x: node.y
+              ,ym: node.x
+              ,xm: node.y
+            }
+
+            if(node.children){
+              node.children.forEach(function(me){
+                var myXY = maxXY(me);
+                xy.x = myXY.x > xy.x ? myXY.x : xy.x;
+                xy.xm = myXY.xm < xy.xm ? myXY.xm : xy.xm;
+                xy.y = myXY.y > xy.y ? myXY.y : xy.y;
+                xy.ym = myXY.ym < xy.ym ? myXY.ym : xy.ym;
+              })
+            };
+            return xy;
+          }
+
+
+
+          // declares a tree layout and assigns the size
+          var treemapDown = d3.tree()
+            .nodeSize([100, 100])
+            .separation(function(a,b){
+              if(a.parent == b.parent){
+                if(b.children){
+                  return .4;
+                }else{
+                  return .4;
+                }
+              }else{
+                return .4;
+              }
+
+            })
+          //  assigns the data to a hierarchy using parent-child relationships
+          var nodesDown = d3.hierarchy(treeDataDown, function(d) {
+              return d.children;
+            });
+          // maps the node data to the tree layout
+          nodesDown = treemap(nodesDown);
+
+          var margin = {top: 20, right: 90, bottom: 30, left: 90};
+          var maxUP = maxXY(nodes);
+          var maxDN = maxXY(nodesDown);
+
+          console.log('max',maxUP, maxDN);
+
+          var maxes = {
+            width: maxUP.x + maxDN.x
+            ,height: ((maxUP.y - maxUP.ym) > (maxDN.y - maxDN.ym)) ? (maxUP.y - maxUP.ym) : (maxDN.y - maxDN.ym)
+            ,minX: (maxUP.x + 100 + margin.left) * -1
+            ,minY: ((maxUP.ym < maxDN.ym) ? maxUP.ym : maxDN.ym) - margin.top
+
+          }
+          // maxes.width = (maxes.width < 1024) ? 1024 : maxes.width;
+          // maxes.height = (maxes.height < 1024) ? 1024 : maxes.height;
+
+          // console.log('maxes', maxes);
+          // set the dimensions and margins of the diagram
+          var width = maxes.width - margin.left - margin.right,
+              height = maxes.height - margin.top - margin.bottom;
+          var zoom = d3.zoom()
+            .scaleExtent([0.2, 10])
+            .on("zoom", redraw); //if you are sure that your zoom function is working just replace redraw with your zoom function
+
+
+          // append the svg object to the body of the page
+          // appends a 'group' element to 'svg'
+          // moves the 'group' element to the top left margin
+          var svgholder = d3.select("#svgholder").append("svg")
+                .attr("width", "98%") //width + margin.left + margin.right)
+                .attr("height", "98%") //height + margin.top + margin.bottom)
+                .attr("class", "dsTree")
+                .attr('viewBox', maxes.minX + " " + maxes.minY + " " + (maxes.width + margin.left + margin.right + 350)+ " " + (maxes.height + margin.top + margin.bottom))
+                .call(zoom);
+          
+          var svg = svgholder.append("g")
+
+          var g2 = svg.append("g")
+            // .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          var g = svg.append("g")
+            // .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+          function redraw() {
+            // d3.event.transform.x = Math.min(0, Math.max(d3.event.transform.x, width - width * d3.event.transform.k));
+            // d3.event.transform.y = Math.min(0, Math.max(d3.event.transform.y, height - height * d3.event.transform.k));
+            return svg.attr("transform", d3.event.transform);
+          }
+
+          var defs = svg.append("defs");
+          
+          var fusionIcon = defs.append("g").attr("id", "fusionIcon");
+          fusionIcon.append("polygon").attrs({
+            points: "1.22 74.33 130 0 260 74.33 260 177.33 197.09 177.33 197 111.67 132.33 74.33 1.22 74.33"
+            ,fill: "#9bcded"
+          });
+          fusionIcon.append("polygon").attrs({
+            points: "-20 -20 -21 -20 -20 -20"
+          })
+          fusionIcon.append("polygon").attrs({
+            points: "0 122 67.24 122 67.33 186.67 132.33 224 260 224 130 300 0 225 0 122"
+            ,fill: "#9bcded"
+          });
+          
+          var dsIcon = defs.append("g").attr("id", "dsIcon");
+
+          dsIcon.append("rect").attrs({
+          	x:"30",y:"90",width:"240",height:"45",stroke:"none",fill:"#888" });
+          dsIcon.append("rect").attrs({
+          	x:"30",y:"150",width:"240",height:"45",stroke:"none",fill:"#888" });
+          dsIcon.append("rect").attrs({
+          	x:"30",y:"210",width:"240",height:"45",stroke:"none",fill:"#888" });
+          dsIcon.append("rect").attrs({
+          	x:"39",y:"97.5",width:"39",height:"30",stroke:"none",fill:"#fff" });
+          dsIcon.append("rect").attrs({
+          	x:"39",y:"157.5",width:"39",height:"30",stroke:"none",fill:"#fff" });
+          dsIcon.append("rect").attrs({
+          	x:"39",y:"217.5",width:"39",height:"30",stroke:"none",fill:"#fff" });
+
+          var dfIcon = defs.append("g");
+          dfIcon.attrs({
+            "id": "dfIcon"
+            ,stroke: "none"
+            ,fill: "#888"
+          });
+
+          dfIcon.append("polygon").attrs({
+            points: "125 30 175 30 174.67766953 160.6776695 125 150"
+          });
+          dfIcon.append("polygon").attrs({
+            points: "30 270 30 190 110 270"
+          });
+          dfIcon.append("polygon").attrs({
+            points: "270 270 270 190 190 270"
+          });
+          dfIcon.append("polygon").attrs({
+            points: "87.47766953 247.8776695 52.02233047 212.6223305 132.32233047 132.3223305 174.67766953 160.6776695"
+          });
+          dfIcon.append("polygon").attrs({
+            points: "212.6223305 247.9776695 247.9776695 212.6223305 197.6776695 162.3223305 162.3223305 197.6776695"
+          });
+
+          var getlinks = function(d, arr){
+            arr.push('a'+d.data.data.id);
+            if(!d.children) return arr;
+
+            d.children.forEach(function(c){
+              arr = getlinks(c,arr);
+            });
+            
+            return arr;
+          };
+
+
+
+          // adds the links between the nodes
+          var linkDown = g2.selectAll(".link")
+              .data(nodesDown.descendants().slice(1))
+              .enter().append("path")
+              // .attr("class", "link")
+              .attr("class", function(d){
+                var c = ['link'];
+                // console.log('c',c);
+                c = getlinks(d,c);
+                // console.log('c',c);
+                
+                return c.join(' ');
+              })
+              .attr("d", function(d) {
+                 return "M" + d.y + "," + d.x
+                   + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+                   + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+                   + " " + d.parent.y + "," + d.parent.x;
+                 });
+
+          // adds each node as a group
+          var nodeDown = g2.selectAll(".node")
+              .data(nodesDown.descendants())
+            .enter().append("g")
+              .attr("class", function(d) {
+                var focus= d.depth > 0 ? '' : ' focalnode';
+                return "node" +
+                  (d.children ? " node--internal" : " node--leaf")
+                  + ' c'+d.data.data.id + focus; 
+                })
+              .attr("transform", function(d) {
+                return "translate(" + d.y + "," + d.x + ")"; });
+
+
+          nodeDown.on("mouseover", function(d,i){
+
+            // console.log('hovered over ',d);
+            d3.selectAll('.pinpoint').classed('pinpoint', false);
+            d3.selectAll(`.a${d.data.data.id}`).classed('pinpoint', true);
+
+            d3.selectAll('.duplicate').classed('duplicate', false);
+            d3.selectAll(`.c${d.data.data.id}`).classed('duplicate', true);
+
+            $scope.details = d.data.data;
+            $scope.$apply();
+            d3.select(this).style('fill', '#000');
+          })
+          nodeDown.on("mouseout", function(d,i){
+            // $scope.details.forEach((data,idx,arr)=>{
+            //   if(d.data.data=data){
+            //     arr.splice(idx,1);
+            //   }
+            // })
+          });
+
+          nodeDown.append("rect")
+            .attrs({
+              "width": "240"
+              ,"height": "25"
+              ,"y": -12.5
+              ,"x": 13
+              ,"class": "titleBox"
+            });
+
+          // adds the circle to the node
+          nodeDown.append("circle")
+            .attr("r", 15).attr("class", function(d){
+              return "descendant";
+            });
+
+          nodeDown.append("use").attr('xlink:href',function(d){
+            if(d.data.data.type == 'datafusion'){
+              return "#fusionIcon";
+            }if(d.data.data.inputs){
+              return "#dfIcon";
+            }else{
+              return "#dsIcon";
+            }
+          })
+            .attr("transform",function(d){
+              if(d.data.data.type == 'datafusion'){
+                return "scale("+(25/300)+") translate(-130,-150)";
+              }else{
+                return "scale("+(25/300)+") translate(-150,-170)";
+              }
+            });
+
+          // adds the text to the node
+          nodeDown.append("text")
+            .attr("dy", function(d) { return d.childrens ? "-1.5em" : ".35em"; })
+            .attr("x", function(d) { return d.childrens ? 0 : 20; })
+            .attr("class", "title")
+            .style("text-anchor", function(d) {
+              return d.childrens ? "middle" : "start"; })
+            .text(function(d) {
+              if(d.data.up){
+                return '';
+              }else{
+                return d.data.name.length > 20 ? d.data.name.substring(0,19) + '...' : d.data.name;
+              }
+            });
+
+
+
+
+            nodeDown.append("rect")
+              .attrs({
+                "width": "150"
+                ,"height": "25"
+                ,"y": -12.5
+                ,"x": 13
+                ,"class": "hoverBox"
+              }).on("mouseover", function(d){
+                // d3.select(this).style("fill", "#91C3E8");
+              }).on("mouseout", function(d){
+
+              }).on("click", function(d){
+                var clickedElement = this;
+                $scope.details = {};
+                $mdDialog.show({
+                  templateUrl: (d.data.data.cardInfo) ? '/datasetDetails.html' : '/dataflowDetails.html'
+                  ,closeTo: clickedElement
+                  ,openFrom: clickedElement
+                  ,controller: function(scope,data,myData,$mdDialog){
+                    scope.i = myData.instance;
+                    
+                    console.log('alert data', data);
+                    scope.datum = data;
+                    scope.me = data.data.data;
+                    scope.openLink = function(link){
+                      $('<a href="'+link+'" target="_blank">hi</a>')[0].click();
+                    }
+                    scope.closeDialog = function(){
+                      $mdDialog.hide();
+                    }
+                  },locals: {
+                    data: d
+                  },clickOutsideToClose: true
+                  ,fullscreen: true
+                });
+              })
+            nodeDown.append("circle")
+              .attr("r",function(d){return d.data.down ? 20 : 15;})
+              .attr("class", function(d){
+                return "picker c"+ d.data.data.id;
+              })
+              .on("click", function(d){
+                $rootScope.go(d.data.data);
+              });
+
+
+
+
+
+
+
+          // adds the links between the nodes
+          var link = g.selectAll(".link")
+              .data( (function(){var x = nodes.descendants().slice(1); x.forEach(function(me){me.y = me.y * -1;}); return x;})())
+              .enter().append("path")
+              // .attr("class", "link")
+              .attr("class", function(d){
+                var c = ['link', 'a'+d.data.data.id];
+                // console.log('c',c);
+                c = getlinks(d,c);
+                // console.log('c',c);
+                
+                return c.join(' ');
+              })
+              .attr("d", function(d) {
+                 return "M" + d.y + "," + d.x
+                   + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+                   + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+                   + " " + d.parent.y + "," + d.parent.x;
+                 });
+
+          // adds each node as a group
+          var node = g.selectAll(".node")
+              .data(nodes.descendants())
+            .enter().append("g")
+              .attr("class", function(d) {
+                var focus= d.depth > 0 ? '' : ' focalnode';
+                return "node" +
+                  (d.children ? " node--internal" : " node--leaf")
+                  + ' c'+d.data.data.id + focus; 
+                })
+              .attr("transform", function(d) {
+                return "translate(" + d.y + "," + d.x + ")"; });
+
+
+
+
+          node.on("mouseover", function(d,i){
+
+            // console.log('hovered over ',d);
+            d3.selectAll('.pinpoint').classed('pinpoint', false);
+            d3.selectAll(`.a${d.data.data.id}`).classed('pinpoint', true);
+
+            d3.selectAll('.duplicate').classed('duplicate', false);
+            d3.selectAll(`.c${d.data.data.id}`).classed('duplicate', true);
+
+            $scope.details = d.data.data;
+            $scope.$apply();
+            })
+            nodeDown.on("mouseout", function(d,i){
+            // $scope.details.forEach((data,idx,arr)=>{
+            //   if(d.data.data=data){
+            //     arr.splice(idx,1);
+            //   }
+            // })
+          });
+
+
+          node.append("rect")
+            .attrs({
+              "width": "240"
+              ,"height": "25"
+              ,"y": -12.5
+              ,"x": -250
+              ,"class": "titleBox"
+            });
+
+          // adds the circle to the node
+          node.append("circle")
+            .attr("r", function(d){
+              if(d.data.down){
+                return 20;
+              }else{
+                return 15;
+              }
+            }).attr('class', function(d){
+              if(d.data.down){
+                return "focus";
+              }else{
+                return "ancestor";
+              }
+            })
+          node.append("use").attr('xlink:href',function(d){
+            if(d.data.data.type == 'datafusion'){
+              return "#fusionIcon";
+            }if(d.data.data.inputs){
+              return "#dfIcon";
+            }else{
+              return "#dsIcon";
+            }
+          }).attr("transform",function(d){
+            if(d.data.data.type == 'datafusion'){
+              return "scale("+(25/300)+") translate(-130,-150)";
+            }else{
+              return "scale("+(25/300)+") translate(-150,-170)";
+            }
+          });
+
+
+          // adds the text to the node
+          node.append("text")
+          .attr("dy", function(d) { return !d.data.down ? ".35em" : "-2.5em"; })
+          .attr("x", function(d) { return !d.data.down ? -20 : 0; })
+          .attr("class", "title")
+          .style("text-anchor", function(d) {
+            return !d.data.down ? "end" : "middle"; })
+          .text(function(d) {
+            if(d.data.down){
+              return d.data.name;
+            }else{
+              return d.data.name.length > 20 ? d.data.name.substring(0,19) + '...' : d.data.name;
+            }
+          });
+
+
+          node.append("rect")
+            .attrs({
+              "width": "150"
+              ,"height": "25"
+              ,"y": -12.5
+              ,"x": -160
+              ,"class": "hoverBox"
+            }).on("mouseover", function(d){
+              // d3.select(this).style("fill", "#91C3E8");
+            }).on("mouseout", function(d){
+
+            }).on("click", function(d){
+              var clickedElement = this;
+              $mdDialog.show({
+                templateUrl: (d.data.data.cardInfo) ? '/datasetDetails.html' : '/dataflowDetails.html'
+                ,closeTo: clickedElement
+                ,openFrom: clickedElement
+                ,controller: function(scope,data,myData,$mdDialog){
+                  scope.i = myData.instance;
+                  console.log('alert data', data);
+                  scope.datum = data;
+                  scope.me = data.data.data;
+                  scope.openLink = function(link){
+                    $('<a href="'+link+'" target="_blank">hi</a>')[0].click();
+                  }
+                  scope.closeDialog = function(){
+                    $mdDialog.hide();
+                  }
+                },locals: {
+                  data: d
+                },clickOutsideToClose: true
+                ,fullscreen: true
+              });
+            })
+          node.append("circle")
+            .attr("r",function(d){return d.data.down ? 20 : 15;})
+            .attr("class", function(d){
+                return "picker c"+ d.data.data.id;
+              })
+            .on("click", function(d){
+              $rootScope.go(d.data.data);
+            });
+        }
+      });
+
+      
+      app.filter('grab', function() {
+        return function(input, start, end) {
+          if(!input){return [];};
+
+          start = +start; //parse to int
+          end = +end;
+          return input.slice(start, end);
+        };
+      });
+
+      app.value('fusion', "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAC00lEQVR42u2dS2vbUBCF5///g0KjRWjdJpuQRR6Ubrotxs6Thpokpo1oC6WWbCdObMtTyyXFGJJIiXRn5t4zcFbeGH/os5E159Kr5h9G5EL4EAAAABAAAAAEAAAAAYDCeX+S8rd0whe9Mb89SgDAVdZaPW79GPF0xv9nks34c3zDr+evAUCN+XA+5MFdxg9NMsp45+sAAOrSTdGxpCWyppuis9DSlX4tkVXdFB3tWiLrurGuJfJBN5a1RD7pxqKWyEfdWNIS+aobK1oi33VTWEu3Mloil7r5LqgbrVqikHRTSkuO7i1RiLrRpCUKWTcatESh60ZaSwTdlNfSboVaIujm+VpqVKClZwOIPNaNSy0RdCOrpVIAonaPD36O+PfNVE2ymS4trR8m/v0l+Vg2T1OO+3q+g3I7BPlc0MeLIQ/HGQBIJlfk4VyRkloKGoAGLQGAsJYA4IFfbq60BACPaOnKgZYAQFhLACCsJQAQ1lKtAN4cJYt/iF6arS99dVoaV3Q51ArgU/e6kjf5azhVdzXkN9QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACqBXA7mfFeR9f2+vZZv5Jb7bU+GVcVgPvpJmN+d5yisEkKwL8njJmb8Wix3AEAAgDuJ507WJuWggIQqpbUAQhNSyoBhKQl1QBC0JIJAD5ryQyAZS3te6QlcwB801IpAPm6vqad4FxLmhYGc0WWXVnFmmoFs1hT7ThYU8Wi9uoVKLSovZyNQKsKLvOqgmPBqoKgyzo6iso6VrXURl2N/ILGhoeFTQ0LhU0+VpbtWqwss/5ryZvSPotaqlM3KG4V1o2aLclIW3VxHFB1sSYtudYN6uuFdaN6UTtydYBDjAMcRLSkQTdhHuKjSDfmuiKilx5jFeMYK5EycK26Md+W8uRRhsp140VdTYTDPHVpyZJuUNgEAAgAAAACAACAAAAAIHn+AorhmEufxmTzAAAAAElFTkSuQmCC");
+      app.value('spinnerSmall', "data:image/gif;base64,R0lGODlhDwAPAKIAAP////D3/OLw+cXh85vL6////wAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQFBQAFACwAAAAABQAFAAADBUi63M4JACH5BAUFAAUALAAABQAFAAUAAAMFSLrczgkAIfkEBQUABQAsAAAKAAUABQAAAwVIutzOCQAh+QQFBQAFACwFAAoABQAFAAADBUi63M4JACH5BAUFAAUALAUABQAFAAUAAAMFSLrczgkAIfkEBQUABQAsAAAAAAoABQAAAww4qtS9zBE45ISW2gQAIfkEBQUABQAsAAAAAA8ACgAAAx0oqtT+i70ZxaTxwqzb+F8hjiQYkqg5oKnJlu4rJgAh+QQJBQAFACwAAAAADwAPAAADKxiq1f6LvRnDpPHCrJv430SMIxg+ZGmKqSmwpAuPQ113jX3j+oAXvV8QlwAAIfkECQUABQAsAAAAAA8ADwAAAyxYqtT+i70Zy6Txwqxb+F/ngYFIkKWImqsovO8gyxMcz0Nt4/ljCzwdLPhIAAAh+QQJBQAFACwAAAAADwAPAAADLliq1P6LvRnLpPHCrFsdIIgtobiR5aiUg1qwUyDLQl3Hc2DfT67vuNlOEKQBHwkAIfkECQUABQAsBQAAAAoADwAAAyA4qtS9zBE45ISWWsH57sLXiZ4EhlKgqtbKpm4bw6uVAAAh+QQJBQAFACwFAAAACgAPAAADIyiq073MDSjkhJbawDn5X+eBhBiQpYiaaOG67VvELw2T8kwmACH5BAkFAAUALAUAAAAKAA8AAAMjGKrSvcwJGOSEltrC+fhf54GDWJCliJqrSLyvCcfuLNs1nAAAIfkECQUABQAsCgAAAAUADwAAAw4YutzOIspJ6xw46811AgAh+QQJBQAFACwKAAUABQAKAAADCRi63M4iyknrTAAh+QQJBQAFACwKAAoABQAFAAADBRi63M4JACH5BAUFAAUALAAAAAABAAEAAAMCWAkAIfkEBQUABQAsCgAKAAUABQAAAwVIutzOCQAh+QQFBQAFACwFAAoABQAFAAADBUi63M4JACH5BAUFAAUALAAACgAFAAUAAAMFSLrczgkAIfkEBQUABQAsAAAFAAUABQAAAwVIutzOCQAh+QQFBQAFACwFAAUABQAFAAADBUi63M4JACH5BAUFAAUALAoABQAFAAoAAAMJSLrcziPKSetMACH5BAUFAAUALAUAAAAKAA8AAAMdWKrUvcwRWOSElmbNu//eIIpCWY6kKaCDuqIu6yYAIfkECQUABQAsAAAAAA8ADwAAAydYqtS+kLkXJa321qmx/2AojtBgmkKaBix7oqrQum8sz+9gz0G+zwkAIfkECQUABQAsAAAAAA8ADwAAAyVIutz+MMoZh7Xy4qpz55ckjGNgmkWakuUZqCvrvjArzHBh43ACACH5BAkFAAUALAAAAAAPAA8AAAMoSLrc/jDKGYW1I+d2sR5c94FMJ4zhhTJB2xZwLLuvbNOBfdP6zPewBAAh+QQJBQAFACwAAAAADwAKAAADG0i63P4wyhmDtSLnwfnFmtB5XyiOX2COQ7qOCQAh+QQJBQAFACwAAAAADwAKAAADI0i6PO4skgflosNeqhUuIBiMo2CaoUgGJ5qubJsWcCvMdZsAACH5BAkFAAUALAAAAAAPAAoAAAMjSKrTLRAu5kaUs9o7ib5C911FaZ5Bmp5soa6t+Qax/NblnAAAIfkECQUABQAsAAAAAA8ABQAAAxI4qtIdEC7mRJSz2juHvkH3XQkAIfkECQUABQAsAAAAAAoABQAAAwwoqtG9zAUo5ISW2gQAIfkECQUABQAsAAAAAAUABQAAAwUYutzOCQAh+QQFBQAFACwAAAAAAQABAAADAlgJACH5BAkFAAUALAAAAAABAAEAAAMCWAkAOw==");
+      app.value('spinnerMed', "data:image/gif;base64,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");
+      app.value('spinnerLarge', "data:image/gif;base64,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");
+      app.value('dataFlowImg', "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAYVJREFUWAntVzGqg0AQHT8/BEsDIWCZOpWFJo0H8ABaeh1P5BlShIDgCQKxsbVLYXgLI2bZlc3CZ/ngNOvOzrz3nBncxKuqaiSH9uOQW1CvApxX4Nd2Bvb7PZ1OJ5Heti31fW8FZS1gt9tRHMeCtOs6awHOW7AKWCuwVuD/ViAIAqsvn5xkVQF8gtM0FVjjONIwDDKu8f5rASDPsow8zyOQ13VNz+dTEML3rSkFbDYbJY6KHBcRzPd9KstyuqBkAB2mUkCSJBSG4QfGEjnevCgKOhwOojqInRuwgKkypQCozfN8ErFEDlC04na7iRVi0CIWAXJg6SqgvY63261IvN/vdD6fP3rOZZ+/Eft4PrDiyo6iiIClM60AJCDxcrmIXB44JlIB8hmL4FxVLPuULeDD+Xq9XokJ5n75GTGINTVjASilPJgqEsQg1tSMBfBMLInggVvquSxMOQOPx0OOm/bH41H8/nu9XpMPD5hynDVN8+HnjQ7TW/+acYlcrcZD+FcCnQt4A5Hbif7CGeowAAAAAElFTkSuQmCC");
+      app.value('datasetImg', "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAARklEQVR42u3VUQkAQAhEQdPaP4IphEVn4AK8D2+rAIAsHf7+BaQFChDgiK8HYIkdsR0QIMAvZIktsRvwjQoQ4IgtMQCwawAmFmtwBT2W7wAAAABJRU5ErkJggg==");
+      app.value('domologo',"data:image/png;base64,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");
+
+      app.factory('myData',function(spinnerSmall, spinnerMed, spinnerLarge, dataFlowImg, datasetImg, domologo, fusion){
+        var f = 'FFFFFFFFFF_PLACEHOLDER_FFFFFFFFFF';
+        var d = 'DDDDDDDDDD_PLACEHOLDER_DDDDDDDDDD';
+        var c = 'CCCCCCCCCC_PLACEHOLDER_CCCCCCCCCC';
+
+        var instance = 'IIIIIIIIII_PLACEHOLDER_IIIIIIIIII';
+        var staticDate = 'YYYYYYYYYY_PLACEHOLDER_YYYYYYYYYY';
+
+        //QQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAA
+
+        if(f=='FFFFFFFFFF_PLACEHOLDER_FFFFFFFFFF'){
+          instance = 'chegg.domo.com';
+          staticDate = '22-Dec-2016... FOR EXAMPLE';
+          f=window.f;
+          d=window.d;
+          c=window.c;
+        };
+
+        //QQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAAQQQQAAAA
+        let raw = {f:JSON.parse(f), d:JSON.parse(d), c:JSON.parse(c)};
+        console.log('fdc', raw);
+        var flows = {};
+        flows.data = JSON.parse(f);
+        flows.idx = {};
+        flows.inputs = {};
+        flows.outputs = {};
+        flows.recursives = {};
+
+        var dsets = {};
+        dsets.data = JSON.parse(d);
+        dsets.idx = {};
+
+        var cards = {};
+        cards.data = JSON.parse(c);
+        cards.idx = {};
+
+
+        flows.arr = flows.data.rows.map(row => {
+          var tmp = {};
+          flows.data.fields.forEach((field, idx) => {
+            tmp[field] = row[idx];
+          });
+          return tmp;
+        });
+
+        flows.arr.forEach(function(me,idx,arr){
+          flows.idx[me.id] = me;
+          if(me.lastExecution){
+            var ttlSeconds = (me.lastExecution.lastUpdated - me.lastExecution.beginTime)/1000;
+            var modSeconds = ttlSeconds % 60;
+            var modMinutes = ((ttlSeconds - modSeconds)/60) % 60;
+            var hours = (((ttlSeconds - modSeconds)/60) - modMinutes) / 60;
+            var duration = hours+':'+modMinutes+':'+modSeconds;
+          }
+
+          me.duration = duration || '';
+          me.seconds = ttlSeconds || 0;
+
+          if(me.inputs && me.outputs){
+            me.inputs.forEach(function(ime,iidx,iarr){
+              me.outputs.forEach(function(ome,oidx,oarr){
+                if(ime.id == ome.id){
+                  flows.recursives[ime.id] = me.id;
+                }
+              });
+            });
+          }
+          if(me.inputs){
+            var r = -1;
+
+            me.inputs.forEach(function(ime,iidx,iarr){
+              if(!flows.inputs[ime.id]){
+                flows.inputs[ime.id] = [];
+              };
+              if((flows.recursives[ime.id] && me.id != flows.recursives[ime.id]) || !flows.recursives[ime.id]){
+                flows.inputs[ime.id].push(me);
+              };
+              if(flows.recursives[ime.id] && me.id == flows.recursives[ime.id]){
+                r=iidx;
+              };
+            });
+
+            if(r>=0){
+              me.inputs.splice(r,1);
+            }
+          }else{
+            me.inputs = [];
+          }
+          if(me.outputs){
+          me.outputs.forEach(function(ome,oidx,oarr){
+            if(!flows.outputs[ome.id]){
+              flows.outputs[ome.id] = [];
+            }
+            flows.outputs[ome.id].push(me);
+          })
+          }else{
+            // console.log('no outputs', me);
+            me.outputs = [];
+          }
+        });
+        // console.log('flow data', flows);
+
+
+
+
+        dsets.arr = dsets.data.rows.map(row => {
+          var tmp = {};
+          dsets.data.fields.forEach((field, idx) => {
+            tmp[field] = row[idx];
+          })
+          return tmp;
+        });
+
+        dsets.arr.forEach(function(me,idx,arr){
+          dsets.idx[me.id] = me;
+          me.cards = [];
+
+          // use inputDataSources to know what the inputs are
+          if(me.fusions){
+            flows.idx[me.id] = me;
+            me.outputs = [{id: me.id}];
+            me.inputs = [];
+            flows.outputs[me.id] = [me];
+
+            me.fusions.forEach(function(ids){
+              if(!flows.inputs[ids]){
+                flows.inputs[ids] = [];
+              }
+              flows.inputs[ids].push(me);
+              me.inputs.push({id: ids});
+            });
+            // console.log('fusion', me);
+          }
+
+          me.recursiveds = flows.recursives[me.id] ? true : false;
+        });
+
+
+        cards.arr = cards.data.rows.map(row=>{
+          var tmp = {};
+          cards.data.fields.forEach((field, idx) => {
+            tmp[field] = row[idx];
+          })
+          return tmp;
+        });
+
+        cards.arr.forEach(function(me,idx,arr){
+          cards.idx[me.kpiId] = me;
+
+          if(me.dataset){
+            if(dsets.idx[me.dataset]){
+              dsets.idx[me.dataset].cards.push(me);
+            };
+          };
+        });
+
+        console.log('fdc after', {f:flows.arr, d:dsets.arr, c:cards.arr})
+
+        let toCSV = (data, filename) => {
+          let csv = 'data:application/octet-stream,';
+          csv += data.fields.join();
+
+          data.rows.forEach(row => {
+            csv += '\n' + row.map(field => {
+              switch(typeof field){
+                case 'object':
+                case 'function':
+                  let tmp = JSON.stringify(field).replace(/"/g,'""');
+                  return `"${tmp}"`;
+                  break;
+                default:
+                  return `"${field}"`
+              }
+            }).join();
+          });
+
+          var encodedUri = encodeURI(csv);
+          let link = document.createElement('a');
+          link.setAttribute('href', encodedUri);
+          link.setAttribute('download', filename);
+          link.click();
+        }
+
+        let csv = {
+          cards: function(){
+            toCSV(raw.c, 'Cards.csv');
+            return;
+          },flows: function(){
+            toCSV(raw.f, 'DataFlows.csv');
+            return;
+          },datasets: function(){
+            toCSV(raw.d, 'Datasets.csv');
+            return;
+          }
+        }
+        return {
+          dataFlows : flows.arr
+          ,dataSets : dsets.arr
+          ,cards : cards.arr
+          ,getDataset : function(id){return dsets.idx[id];}
+          ,getDataflow : function(id){return flows.idx[id];}
+          ,getCard : function(id){return cards.idx[id];}
+          ,getDownStream : function(id){
+            if(flows.inputs[id]){
+              return flows.inputs[id];
+            }else{
+              return [];
+            }
+          },getUpStream : function(id){
+            if(flows.outputs[id]){
+              return flows.outputs[id];
+            }else{
+              return [];
+            }
+          },instance: instance
+          ,spinnerSmall: spinnerSmall
+          ,spinnerMed: spinnerMed
+          ,spinnerLarge: spinnerLarge
+          ,dataFlowImg: dataFlowImg
+          ,datasetImg: datasetImg
+          ,staticDate: staticDate
+          ,domologo: domologo
+          ,fusion: fusion
+          ,csv: csv
+        }
+
+      });
+    </script>
+
+
+
+
+  </body>
+</html>
